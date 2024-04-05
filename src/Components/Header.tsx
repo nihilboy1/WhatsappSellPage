@@ -11,9 +11,9 @@ interface HeaderProps {
 
 export function Header({ typing }: HeaderProps) {
   return (
-    <header className="h-[4.5rem] bg-green-800 flex flex-row p-4  items-center justify-between ">
+    <header className="h-[4.5rem] bg-[#005E54] flex flex-row p-4 mb-20  items-center justify-between fixed z-20 w-full">
       <ArrowLeft size={26} color="white" weight="bold" />
-      <div className="flex flex-row items-center gap-2 ml-2">
+      <div className="flex flex-row items-center gap-2 ml-2 lg:mr-auto">
         <img
           src="https://i.imgur.com/y5bbI33.png"
           alt=""

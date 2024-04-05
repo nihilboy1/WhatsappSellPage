@@ -3,6 +3,7 @@ import { ServerMessageLine } from "./Components/ServerMessageLine";
 import { Header } from "./Components/Header";
 import { Input } from "./Components/Input";
 import { ClientMessageLine } from "./Components/ClientMessageLine";
+import { v4 as uuidv4 } from "uuid";
 
 const firstMessages = [
   "Olá, seja bem vindo(a)!",
@@ -10,72 +11,147 @@ const firstMessages = [
   "Qual o seu WHATSAPP? (Com DDD)",
 ];
 
+const userOptions = ["VER OUTRAS OPÇÕES", "BORAA!!!"]
+
+const productOptions = ["GRAVAÇÃO 1", "GRAVAÇÃO 2", "GRAVAÇÃO 3"];
+
+export type stageProps = "phone" | "name" | "options" | "showing";
+
 export default function App() {
-  const [serverMessagesCounter, setServerMessagesCounter] = useState(0);
+  const [firstMessagesCounter, setFirstMessagesCounter] = useState(0);
   const [clientPhone, setClientPhone] = useState("");
   const [clientName, setClientName] = useState("");
-  const [stage, setStage] = useState<"phone" | "name" | "products">("phone");
+  const [stage, setStage] = useState<stageProps>("phone");
   const [text, setText] = useState("");
   const [renderedFirstMessages, setRenderedFirstMessages] = useState<
     JSX.Element[]
   >([]);
+  const [messagesList, setMessagesList] = useState<JSX.Element[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string>("");
+
+  
+
+  function getDescriptionTextFromSelectedOption(selectedOption: string) {
+    if (selectedOption === "GRAVAÇÃO 1") {
+      return "A GRAVAÇAO 1 É EXCELENTE PARA X TIPOS DE COMÉRCIOS";
+    } else if (selectedOption === "GRAVAÇÃO 2") {
+      return "A GRAVAÇAO 2 É EXCELENTE PARA Y TIPOS DE COMÉRCIOS";
+    }
+    return "A GRAVAÇAO 3 É EXCELENTE PARA Z TIPOS DE COMÉRCIOS";
+  }
+
+  function sendClientMessage(text: string) {
+    setMessagesList((prevMessages) => [
+      ...prevMessages,
+      <ClientMessageLine key={uuidv4()} text={text} />,
+    ]);
+  }
+
+  function sendServerMessage(text: string) {
+    const timer = setTimeout(() => {
+      setMessagesList((prevMessages) => [
+        ...prevMessages,
+        <ServerMessageLine key={uuidv4()} text={text} />,
+      ]);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }
+
+  function sendServerAudioMessage(link: string) {
+    const timer = setTimeout(() => {
+      setMessagesList((prevMessages) => [
+        ...prevMessages,
+        <ServerMessageLine key={uuidv4()} type="audio" link={link} />,
+      ]);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }
+
+  function sendServerButtonMessage(productList: string[]) {
+    const timer = setTimeout(() => {
+      setMessagesList((prevMessages) => [
+        ...prevMessages,
+        ...productList.map((item) => {
+          return (
+            <ServerMessageLine
+              text={item}
+              type="button"
+              key={uuidv4()}
+              stage={stage}
+              setSelectedOption={setSelectedOption}
+            />
+          );
+        }),
+      ]);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (serverMessagesCounter < firstMessages.length) {
+      if (firstMessagesCounter < firstMessages.length) {
         setRenderedFirstMessages((prevMessages) => [
           ...prevMessages,
           <ServerMessageLine
-            key={firstMessages[serverMessagesCounter]}
-            text={firstMessages[serverMessagesCounter]}
+            key={uuidv4()}
+            text={firstMessages[firstMessagesCounter]}
           />,
         ]);
-        setServerMessagesCounter((prevCounter) => prevCounter + 1);
+        setFirstMessagesCounter((prevCounter) => prevCounter + 1);
       }
     }, 1500);
     return () => clearTimeout(timer);
-  }, [serverMessagesCounter]);
+  }, [firstMessagesCounter]);
 
   useEffect(() => {
-    if (serverMessagesCounter == 3) {
-      const timer = setTimeout(() => {
-        setServerMessagesCounter((prevCounter) => prevCounter + 1);
-      }, 1500);
-      return () => clearTimeout(timer);
+    if (clientPhone !== "") {
+      sendClientMessage(clientPhone);
+      sendServerMessage("Agora informe seu NOME");
+      setStage("name");
     }
   }, [clientPhone]);
 
   useEffect(() => {
-    if (serverMessagesCounter == 4) {
-      const timer = setTimeout(() => {
-        setServerMessagesCounter((prevCounter) => prevCounter + 1);
-      }, 1500);
-      return () => clearTimeout(timer);
+    if (clientName !== "") {
+      sendClientMessage(clientName);
+      sendServerMessage(
+        `${clientName}, qual das opções abaixo você está buscando? Clique em uma delas!`
+      );
+      sendServerButtonMessage(productOptions);
+      setStage("options");
     }
   }, [clientName]);
 
+  useEffect(() => {
+    if (selectedOption !== "" && stage !== "showing") {
+      const filteredMessageList = messagesList.filter((item) => {
+        if (item.props.type !== "button") {
+          return item;
+        }
+      });
+
+      setMessagesList(filteredMessageList);
+      sendClientMessage(selectedOption);
+      const descriptionText =
+        getDescriptionTextFromSelectedOption(selectedOption);
+      sendServerMessage(descriptionText);
+      sendServerMessage("Vou te enviar um demonstrativo, olha só...");
+      sendServerAudioMessage(
+        "https://developer.mozilla.org/@api/deki/files/2926/=AudioTest_(1).ogg"
+      );
+      sendServerMessage("O que achou? Vamos fazer uma dessas para você?");
+      sendServerButtonMessage(userOptions)
+      setStage("showing");
+    }
+  }, [selectedOption]);
+
   return (
-    <main className="bg-whats-pattern h-screen flex-col">
+    <main className="bg-whats-pattern min-h-screen h-full flex-col">
       <Header typing={renderedFirstMessages.length == 3 ? false : true} />
-      <div className="p-4 flex flex-col pb-20">
+      <div className="p-4 flex flex-col pb-20 pt-[6rem] ">
         {renderedFirstMessages}
-        {clientPhone && <ClientMessageLine text={clientPhone} />}
-        {serverMessagesCounter >= 4 && (
-          <ServerMessageLine text="Agora informe o seu NOME" />
-        )}
-        {clientName && <ClientMessageLine text={clientName} />}
-        {serverMessagesCounter >= 5 && (
-          <ServerMessageLine
-            text={`${clientName}, qual das opções abaixo você está buscando? Clique em uma delas!`}
-          />
-        )}
-        {serverMessagesCounter >= 5 && (
-          <>
-            <ServerMessageLine text="OPÇÃO 1" type="button" />
-            <ServerMessageLine text="OPÇÃO 2" type="button" />
-            <ServerMessageLine text="OPÇÃO 3" type="button" />
-          </>
-        )}
+        {messagesList}
       </div>
       <Input
         setStage={setStage}

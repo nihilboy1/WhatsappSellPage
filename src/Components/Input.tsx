@@ -1,14 +1,15 @@
 import { PaperPlaneRight } from "@phosphor-icons/react";
 import { useState } from "react";
+import { stageProps } from "../App";
 
 interface InputProps {
   setText: (value: string) => void;
-  setStage: (value: "phone" | "name" | "products") => void;
+  setStage: (value: stageProps) => void;
   setClientPhone: (value: string) => void;
   setClientName: (value: string) => void;
 
   text: string;
-  stage: "phone" | "name" | "products";
+  stage: stageProps;
 }
 
 export function Input({
@@ -21,7 +22,8 @@ export function Input({
 }: InputProps) {
   const [invalidPhone, setInvalidPhone] = useState(false);
 
-  function handleSetData() {
+  async function handleSetData(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     if (stage == "phone") {
       if (text.length == 11) {
         setClientPhone(text);
@@ -34,7 +36,7 @@ export function Input({
     } else if (stage == "name") {
       setClientName(text);
       setText("");
-      setStage("products");
+      setStage("options");
     }
   }
 
@@ -45,15 +47,21 @@ export function Input({
           Parece que esse telefone não é válido
         </span>
       )}
-      <div className="flex flex-row h-16 w-screen p-2">
+      <form
+        className="flex flex-row h-16 w-screen p-2"
+        onSubmit={handleSetData}
+      >
         <input
           type={stage == "phone" ? "number" : "text"}
           maxLength={20}
+          disabled={stage == "options" ? true : false}
           placeholder={
             stage == "phone"
               ? "Informe seu WHATSAPP"
               : stage == "name"
               ? "Informe seu NOME"
+              : stage == "options"
+              ? "Clique em uma das OPÇÕES"
               : "Escreva aqui"
           }
           className="rounded-full  p-4  w-full shadow-md"
@@ -61,14 +69,12 @@ export function Input({
           value={text}
         />
         <button
-          onClick={() => {
-            handleSetData();
-          }}
+          type="submit"
           className="rounded-full bg-green-800 w-[4.5rem] flex items-center justify-center shadow-md hover:bg-green-700 transition-colors"
         >
           <PaperPlaneRight size={26} color="#f2f2f2" weight="fill" />
         </button>
-      </div>
+      </form>
     </div>
   );
 }
