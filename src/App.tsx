@@ -11,11 +11,10 @@ const firstMessages = [
   "Qual o seu WHATSAPP? (Com DDD)",
 ];
 
-const userOptions = ["VER OUTRAS OPÇÕES", "BORAA!!!"]
-
+const userOptions = ["BORAA!!!", "VER OUTRAS OPÇÕES"];
 const productOptions = ["GRAVAÇÃO 1", "GRAVAÇÃO 2", "GRAVAÇÃO 3"];
 
-export type stageProps = "phone" | "name" | "options" | "showing";
+export type stageProps = "phone" | "name" | "options";
 
 export default function App() {
   const [firstMessagesCounter, setFirstMessagesCounter] = useState(0);
@@ -29,7 +28,30 @@ export default function App() {
   const [messagesList, setMessagesList] = useState<JSX.Element[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
 
-  
+  function clearButtons() {
+    const filteredMessageList = messagesList.filter((item) => {
+      if (item.props.type !== "button") {
+        return item;
+      }
+    });
+    setMessagesList(filteredMessageList);
+  }
+
+  function clearDemonstratativeMessages() {
+    console.log(messagesList);
+
+    let indexClientName = messagesList.findIndex(
+      (item) => item.props.text === clientName
+    );
+
+    const filteredMessageList = messagesList.filter((item, index) => {
+      if (index <= indexClientName) {
+        return item;
+      }
+    });
+
+    setMessagesList(filteredMessageList);
+  }
 
   function getDescriptionTextFromSelectedOption(selectedOption: string) {
     if (selectedOption === "GRAVAÇÃO 1") {
@@ -124,25 +146,35 @@ export default function App() {
   }, [clientName]);
 
   useEffect(() => {
-    if (selectedOption !== "" && stage !== "showing") {
-      const filteredMessageList = messagesList.filter((item) => {
-        if (item.props.type !== "button") {
-          return item;
+    if (selectedOption !== "") {
+      if (productOptions.includes(selectedOption)) {
+        clearButtons();
+        const descriptionText =
+          getDescriptionTextFromSelectedOption(selectedOption);
+        sendClientMessage(selectedOption);
+        sendServerMessage(descriptionText);
+        sendServerMessage("Vou te enviar um demonstrativo, olha só...");
+        sendServerAudioMessage(
+          "https://developer.mozilla.org/@api/deki/files/2926/=AudioTest_(1).ogg"
+        );
+        sendServerMessage("O que achou? Vamos fazer uma dessas para você?");
+        sendServerButtonMessage(userOptions);
+      } else if (userOptions.includes(selectedOption)) {
+        if (selectedOption == userOptions[0]) {
+          console.log("levar para o whatsapp real com o pedido");
+          window.open(
+            "https://wa.me//5584981410949?text=Tenho%20interesse%20em%20comprar"
+          );
+        } else if (selectedOption == userOptions[1]) {
+          clearButtons();
+          clearDemonstratativeMessages();
+          sendServerMessage(
+            `${clientName}, qual das opções abaixo você está buscando? Clique em uma delas!`
+          );
+          sendServerButtonMessage(productOptions);
+          setStage("options");
         }
-      });
-
-      setMessagesList(filteredMessageList);
-      sendClientMessage(selectedOption);
-      const descriptionText =
-        getDescriptionTextFromSelectedOption(selectedOption);
-      sendServerMessage(descriptionText);
-      sendServerMessage("Vou te enviar um demonstrativo, olha só...");
-      sendServerAudioMessage(
-        "https://developer.mozilla.org/@api/deki/files/2926/=AudioTest_(1).ogg"
-      );
-      sendServerMessage("O que achou? Vamos fazer uma dessas para você?");
-      sendServerButtonMessage(userOptions)
-      setStage("showing");
+      }
     }
   }, [selectedOption]);
 

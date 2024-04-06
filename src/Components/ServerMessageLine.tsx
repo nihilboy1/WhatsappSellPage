@@ -31,14 +31,10 @@ export function ServerMessageLine({
 
   if (type == "audio" && link) {
     return (
-      <div className="flex flex-row w-[24rem] mb-12 bg-[#f1f3f4] shadow-lg rounded-lg px-2 items-center">
+      <div className="flex flex-row w-[22.5rem] border-2 mb-4 bg-[#f1f3f4] shadow-lg rounded-lg px-2 items-center">
         <div className="w-full py-3 flex flex-col gap-1 justify-start ">
-          <audio autoPlay controls className="w-[17rem]">
-            <source
-              src="/public/mp3.mp3"
-              type="audio/mp3"
-              className="bg-gray-600"
-            />
+          <audio controls className="w-[17rem]">
+            <source src="/public/mp3.mp3" type="audio/mp3" />
             seu navegador não suporta HTML5
           </audio>
         </div>
@@ -48,12 +44,9 @@ export function ServerMessageLine({
             alt="Imagem do atendente"
             className="rounded-full w-[4rem] h-[4rem]"
           />
-          <Microphone
-            size={24}
-            weight="fill"
-            color="#27eb00"
-            className="absolute left-1 top-10"
-          />
+          <div className="absolute left-0 top-9 bg-[#f1f3f4] rounded-full p-[0.2rem]">
+            <Microphone size={24} weight="fill" color="#005E54" />
+          </div>
         </div>
       </div>
     );
