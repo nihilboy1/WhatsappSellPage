@@ -34,7 +34,7 @@ export function ServerMessageLine({
       <div className="flex flex-row w-[22.5rem] border-2 mb-4 bg-[#f1f3f4] shadow-lg rounded-lg px-2 items-center">
         <div className="w-full py-3 flex flex-col gap-1 justify-start ">
           <audio controls className="w-[17rem]">
-            <source src="/public/mp3.mp3" type="audio/mp3" />
+            <source src="/mp3.mp3" type="audio/mp3" />
             seu navegador não suporta HTML5
           </audio>
         </div>
